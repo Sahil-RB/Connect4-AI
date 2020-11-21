@@ -1,5 +1,6 @@
 from c4 import ConnectFour
 import random
+import os
 
 class Easy(ConnectFour):
     def __init__(self, psym, csym):
@@ -16,10 +17,11 @@ class Easy(ConnectFour):
         c = ' '
         t = False
         while True:
+            _ = os.system('cls')
             self.showBoard()
             while True:
                 m = int(input('Enter the column index of your move '))
-                if self.avail[m] <= 0:
+                if self.avail[m] < 0:
                     print('Enter a valid index')
                 else:
                     self.updtBoard(m, self.psym)
@@ -38,6 +40,7 @@ class Easy(ConnectFour):
             if t:
                 break
         
+        _ = os.system('cls')
         print('Final Board:')
         self.showBoard()
         if t:
@@ -52,6 +55,7 @@ class Easy(ConnectFour):
 
     
 if __name__ == '__main__':
+    print('Pick R to go first')
     psym = input('Enter R or Y for your symbol ')
     csym = {'R':'Y', 'Y':'R'}[psym]
     game = Easy(psym, csym)
