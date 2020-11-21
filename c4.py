@@ -11,8 +11,8 @@ class ConnectFour:
         print()
         for i in range(6):
             for j in range(7):
-                print(self.board[i][j], end = '  ')
-            print()
+                print(self.board[i][j], end = '\t')
+            print('\n')
     
     def updtBoard(self, col, sym):
         row = self.avail[col]
