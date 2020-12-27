@@ -3,36 +3,39 @@ import random
 import os
 
 class Easy(ConnectFour):
+    '''
+        Easy level, where the column is chosen at random
+    '''
     def __init__(self, psym, csym):
-        ConnectFour.__init__(self,psym,csym)
+        ConnectFour.__init__(self,psym,csym)  #calls base constructor
     
-    def selectMove(self):
-        choices = [i for i in range(len(self.avail)) if self.avail[i] >= 0]
+    def selectMove(self): #returns column to be dropped in 
+        choices = [i for i in range(len(self.avail)) if self.avail[i] >= 0]  #list of possible choices where 
         mov = random.choice(choices)
         return mov
 
-    def play(self):
-        if self.csym == 'R':
-            self.updtBoard(self.selectMove(), self.csym)
-        c = ' '
-        t = False
+    def play(self): #main function that handles one game
+        if self.csym == 'R':  #opening move of Red(if red is the computers move). 
+            self.updtBoard(self.selectMove(), self.csym)  
+        c = ' ' #check for winning piece
+        t = False #check for tie
         while True:
-            _ = os.system('cls')
+            _ = os.system('cls') 
             self.showBoard()
-            while True:
+            while True: #accepting user input of the column 
                 m = int(input('Enter the column index of your move '))
                 if self.avail[m] < 0:
                     print('Enter a valid index')
                 else:
                     self.updtBoard(m, self.psym)
                     break
-            c = self.checkWin()
+            c = self.checkWin() 
             if c:
                 break 
             t = self.tie()
             if t:
                 break
-            self.updtBoard(self.selectMove(), self.csym)
+            self.updtBoard(self.selectMove(), self.csym)  #computer move
             c = self.checkWin()
             if c:
                 break 
