@@ -1,17 +1,25 @@
 from c4 import ConnectFour
 import os
+import sys
 import pygame
-pygame.init()
+
 SQUARESIZE = 100
 width = 7*SQUARESIZE
 height = 7*SQUARESIZE
 size = (width,height)
-screen = pygame.display.set_mode(size)
+BLUE = (0,0,255)
+BLACK = (0,0,0)
+RED = (255,0,0)
+YELLOW = (255,255,0)
+RADIUS = int(SQUARESIZE/2 - 5)
+pygame.font.init()
 
 class Hard(ConnectFour):
     def __init__(self, psym, csym):
         ConnectFour.__init__(self,psym,csym)
-        self.DLIM = 4
+        self.DLIM = 6
+        pygame.init()
+        self.screen = pygame.display.set_mode(size)
 
     def evalhelper(self, s, ans): #checks a particular set of four, and counts lines of threes and twos for player and comp
         if s.count(self.psym) == 3 and s.count('*') == 1:
@@ -110,47 +118,89 @@ class Hard(ConnectFour):
                     break
             return worstscore
     
-    def play(self):
+    def drawBoard(self):
+        for c in range(7):
+            for r in range(6):
+                pygame.draw.rect(self.screen, BLUE, (c*SQUARESIZE,(r+1)*SQUARESIZE, SQUARESIZE,SQUARESIZE))
+                pygame.draw.circle(self.screen, BLACK, (int(c*SQUARESIZE+SQUARESIZE/2), int((r+1)*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+
+        for c in range(7):
+            for r in range(6):
+                if self.board[r][c] == 'R':
+                    pygame.draw.circle(self.screen, RED, (int(c*SQUARESIZE+SQUARESIZE/2),int((r+1)*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+                elif self.board[r][c] == 'Y':
+                    pygame.draw.circle(self.screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), int((r+1)*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+        pygame.display.update()
+    
+    def play(self): 
         if self.csym == 'R':
             m, _ = self.minimax(0,True,float('-inf'),float('+inf'))
             self.updtBoard(m, self.csym)
         c = ' '
         t = False
-        while True:
-            _ = os.system('cls')
-            self.showBoard()
-            while True:
-                m = int(input('Enter the column index of your move '))
-                if self.avail[m] < 0:
-                    print('Enter a valid index')
-                else:
-                    self.updtBoard(m, self.psym)
-                    break
-            c = self.checkWin()
-            if c:
-                break 
-            t = self.tie()
-            if t:
-                break
-            m, _ = self.minimax(0,True,float('-inf'),float('+inf'))
-            self.updtBoard(m, self.csym)
-            c = self.checkWin()
-            if c:
-                break 
-            t = self.tie()
-            if t:
-                break
-        
+        gameover = False
+        while not gameover:
+            self.drawBoard()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                pygame.draw.rect(self.screen,BLACK,(0,0,width,SQUARESIZE))
+                if event.type == pygame.MOUSEMOTION:
+                    posx = event.pos[0]
+                    if self.psym == 'R':
+                        pygame.draw.circle(self.screen,RED,(posx, int(SQUARESIZE/2)),RADIUS)
+                    else:
+                        pygame.draw.circle(self.screen,YELLOW,(posx, int(SQUARESIZE/2)),RADIUS)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    posx = event.pos[0]
+                    col = posx//SQUARESIZE
+                    if self.avail[col] >= 0:
+                        self.updtBoard(col, self.psym)
+                        self.drawBoard()
+                        c = self.checkWin()
+                        if c:
+                            gameover = True
+                        t = self.tie()
+                        if t:
+                            gameover = True
+                        m, _ = self.minimax(0,True,float('-inf'),float('+inf'))
+                        self.updtBoard(m, self.csym)
+                        c = self.checkWin()
+                        if c:
+                            gameover = True
+                        t = self.tie()
+                        if t:
+                            gameover = True
+                
         _ = os.system('cls')
         print('Final Board:')
         self.showBoard()
         if t:
-            print('Tie')
-            return 
+            print('Tie') 
         if c == self.psym:
             print('You have won!')
-        else:
+        elif c == self.csym:
             print('You lost')
+        self.drawBoard()
+        myfont = pygame.font.SysFont("monospace", 75)
+        if c == self.psym:
+            label = myfont.render("You have won!!", True, (255,255,255))
+            labelRect = label.get_rect()
+            labelRect.center = (width/2,SQUARESIZE/2)
+            self.screen.blit(label,labelRect)
+        elif c == self.csym:
+            label = myfont.render("You lost!!", True, (255,255,255))
+            labelRect = label.get_rect()
+            labelRect.center = (width/2,SQUARESIZE/2)
+            self.screen.blit(label,labelRect)
+        else:
+            label = myfont.render("Game tied!!", True, (255,255,255))
+            labelRect = label.get_rect()
+            labelRect.center = (width/2,SQUARESIZE/2)
+            self.screen.blit(label,labelRect)
+        pygame.display.update()
+        pygame.time.wait(15000)
+        pygame.quit()
 
 if __name__ == '__main__':
     print('Pick R to go first')
